@@ -1,1 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Junaidi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #0d0d0d;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+    }
+
+    a {
+      color: #82b1ff;
+      text-decoration: none;
+    }
+
+    .profile-container {
+      max-width: 860px;
+      margin: 50px auto;
+      background-color: #1e1e1e;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0a66c2, #004182);
+      display: flex;
+      align-items: center;
+      padding: 30px;
+      gap: 20px;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid white;
+      object-fit: cover;
+    }
+
+    .profile-info h1 {
+      margin: 0;
+      color: #fff;
+      font-size: 26px;
+    }
+
+    .profile-info p {
+      margin: 4px 0;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .action-buttons, .login-form {
+      padding: 20px 30px;
+      text-align: center;
+    }
+
+    .action-buttons button, .login-form button {
+      background: linear-gradient(to right, #0a66c2, #0066ff);
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .action-buttons button:hover, .login-form button:hover {
+      background: linear-gradient(to right, #004182, #0a66c2);
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      background: #2b2b2b;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 15px;
+    }
+
+    .content-card {
+      margin: 20px 30px;
+      padding: 20px;
+      background: #2a2a2a;
+      border-radius: 10px;
+      border-left: 5px solid #0a66c2;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .content-card:hover {
+      transform: scale(1.01);
+    }
+
+    .content-card h2 {
+      color: #fff;
+      margin: 0 0 10px;
+    }
+
+    .content-card p {
+      color: #ccc;
+    }
+
+    #logoutBtn {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .login-form {
+      max-width: 360px;
+      margin: 80px auto;
+      background-color: #1f1f1f;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+    }
+
+    .login-form h2 {
+      margin-bottom: 20px;
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    ul li {
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .avatar {
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Profile Container -->
+  <div class="profile-container" id="mainContainer" style="display: none;">
+    <div class="header">
+      <img src="https://i.pinimg.com/736x/81/09/04/810904fd5e3a921ac6ea621b64ed827d.jpg" alt="Profile" class="avatar" />
+      <div class="profile-info">
+        <h1 id="userName">User</h1>
+        <p>He/Him • Web Developer</p>
+        <p>Jakarta, Indonesia • <a href="https://github.com/Juna1d1/pw/">Junaidi.com</a></p>
+        <p><strong>Junaidi Bawah Kubur</strong> — Universitas Ahmad Datok</p>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button id="logoutBtn">Logout</button>
+    </div>
+
+    <div id="content">
+      <p style="padding: 0 30px;">Silakan login untuk melihat data.</p>
+    </div>
+
+    <div class="content-card">
+      <h3>Sosial Media</h3>
+      <ul>
+        <li><strong>LinkedIn:</strong> http://linkedin.com/in/sismadi</li>
+        <li><strong>Credly:</strong> https://www.credly.com/users/wawan-sismadi</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Login Form -->
+  <div class="login-form" id="loginForm">
+    <h2>Login untuk akses data</h2>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button id="loginBtn">Login</button>
+  </div>
+
+  <!-- Supabase Script -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const SUPABASE_URL = 'https://pmgnuwototighfbmegdt.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZ251d290b3RpZ2hmYm1lZ2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkwNTQsImV4cCI6MjA2MjE2NTA1NH0.QjQiA6V8HnV5LWviQGCbPuQ_PuxNAVqcbL6U_epUOEg'
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    const loginForm = document.getElementById('loginForm')
+    const mainContainer = document.getElementById('mainContainer')
+    const content = document.getElementById('content')
+    const userName = document.getElementById('userName')
+    const logoutBtn = document.getElementById('logoutBtn')
+
+    // Login
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim()
+      const password = document.getElementById('password').value.trim()
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (error) {
+        alert('Login gagal: ' + error.message)
+        return
+      }
+
+      loginForm.style.display = 'none'
+      mainContainer.style.display = 'block'
+      logoutBtn.style.display = 'inline-block'
+      loadData()
+    })
+
+    // Logout
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut()
+      content.innerHTML = '<p style="padding:0 30px;">Silakan login untuk melihat data.</p>'
+      loginForm.style.display = 'block'
+      mainContainer.style.display = 'none'
+      logoutBtn.style.display = 'none'
+    })
+
+    // Load Data
+    async function loadData() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      userName.textContent = user.email
+
+      const { data, error } = await supabase.from('web3').select('*').order('id')
+      if (error) {
+        content.innerHTML = `<p style="padding:0 30px;">Gagal memuat data: ${error.message}</p>`
+        return
+      }
+
+      let out = ''
+      data.forEach(row => {
+        out += `
+          <div class="content-card">
+            <h2>${row.judul}</h2>
+            <p>${row.isi}</p>
+          </div>
+        `
+      })
+      content.innerHTML = out
+    }
+
+    // Auto login if session active
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        loginForm.style.display = 'none'
+        mainContainer.style.display = 'block'
+        logoutBtn.style.display = 'inline-block'
+        loadData()
+      }
+    })
+  </script>
+</body>
+</html>
 
