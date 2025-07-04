@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Inventaris</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #111;
+      color: #eee;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .tabs {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .tabs button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #333;
+      color: #fff;
+    }
+
+    .tabs button.active {
+      background: #0a66c2;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    button {
+      padding: 10px;
+      width: 48%;
+      margin: 5px 1%;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .approve { background: #28a745; color: white; }
+    .reject  { background: #dc3545; color: white; }
+    .edit    { background: #ffc107; color: black; }
+    .delete  { background: #ff5722; color: white; }
+
+    .logout {
+      margin-top: 30px;
+      background: crimson;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+    }
+
+    form {
+      max-width: 400px;
+      margin: 20px auto;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      background: #2a2a2a;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 6px;
+    }
+
+    .form-title {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>👨‍💼 Panel Admin Inventaris</h2>
+
+  <div class="tabs">
+    <button id="btnInventaris" class="active">🔧 Daftar Inventaris</button>
+    <button id="btnPeminjaman">📋 Permintaan Peminjaman</button>
+  </div>
+
+  <!-- SECTION: INVENTARIS -->
+  <div class="section active" id="sectionInventaris">
+    <form id="inventarisForm">
+      <div class="form-title">Tambah / Edit Alat</div>
+      <input type="hidden" id="id" />
+      <input type="text" id="nama_alat" placeholder="Nama Alat" required />
+      <input type="text" id="gambar_url" placeholder="Link Gambar" />
+      <textarea id="keterangan" placeholder="Keterangan"></textarea>
+      <input type="number" id="stok" placeholder="Stok" required />
+      <button type="submit">Simpan</button>
+    </form>
+    <div id="alatList" class="grid"></div>
+  </div>
+
+  <!-- SECTION: PEMINJAMAN -->
+  <div class="section" id="sectionPeminjaman">
+    <div id="pinjamList" class="grid"></div>
+  </div>
+
+  <button class="logout" id="logoutBtn">Logout</button>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const supabase = createClient(
+      'https://pmgnuwototighfbmegdt.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZ251d290b3RpZ2hmYm1lZ2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1ODkwNTQsImV4cCI6MjA2MjE2NTA1NH0.QjQiA6V8HnV5LWviQGCbPuQ_PuxNAVqcbL6U_epUOEg'
+    )
+
+    const btnInventaris = document.getElementById('btnInventaris')
+    const btnPeminjaman = document.getElementById('btnPeminjaman')
+    const sectionInventaris = document.getElementById('sectionInventaris')
+    const sectionPeminjaman = document.getElementById('sectionPeminjaman')
+
+    btnInventaris.onclick = () => {
+      btnInventaris.classList.add('active')
+      btnPeminjaman.classList.remove('active')
+      sectionInventaris.classList.add('active')
+      sectionPeminjaman.classList.remove('active')
+    }
+
+    btnPeminjaman.onclick = () => {
+      btnPeminjaman.classList.add('active')
+      btnInventaris.classList.remove('active')
+      sectionPeminjaman.classList.add('active')
+      sectionInventaris.classList.remove('active')
+    }
+
+    const alatList = document.getElementById('alatList')
+    const pinjamList = document.getElementById('pinjamList')
+    const form = document.getElementById('inventarisForm')
+    const idField = document.getElementById('id')
+    const namaField = document.getElementById('nama_alat')
+    const ketField = document.getElementById('keterangan')
+    const stokField = document.getElementById('stok')
+    const gambarField = document.getElementById('gambar_url')
+    const logoutBtn = document.getElementById('logoutBtn')
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || user.email !== 'admin@example.com') location.href = 'index.html'
+
+    form.onsubmit = async (e) => {
+      e.preventDefault()
+      const payload = {
+        nama_alat: namaField.value,
+        keterangan: ketField.value,
+        stok: parseInt(stokField.value),
+        gambar_url: gambarField.value
+      }
+      if (idField.value) {
+        await supabase.from('inventaris').update(payload).eq('id', parseInt(idField.value))
+      } else {
+        await supabase.from('inventaris').insert([payload])
+      }
+      form.reset()
+      loadInventaris()
+    }
+
+    window.editAlat = (item) => {
+      idField.value = item.id
+      namaField.value = item.nama_alat
+      gambarField.value = item.gambar_url || ''
+      ketField.value = item.keterangan
+      stokField.value = item.stok
+    }
+
+    window.hapusAlat = async (id) => {
+      if (confirm('Hapus alat ini?')) {
+        await supabase.from('inventaris').delete().eq('id', id)
+        loadInventaris()
+      }
+    }
+
+    async function loadInventaris() {
+      const { data } = await supabase.from('inventaris').select('*').order('id', { ascending: false })
+      alatList.innerHTML = data.map(item => `
+        <div class="card">
+          <h4>${item.nama_alat}</h4>
+          ${item.gambar_url ? `<img src="${item.gambar_url}" style="width:100%; border-radius:8px; margin-bottom:10px;">` : ''}
+          <p>${item.keterangan}</p>
+          <p>Stok: ${item.stok}</p>
+          <div>
+            <button class="edit" onclick='editAlat(${JSON.stringify(item)})'>Edit</button>
+            <button class="delete" onclick="hapusAlat(${item.id})">Hapus</button>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    window.hapusPeminjaman = async (id) => {
+      const confirmDelete = confirm('Hapus permintaan ini secara permanen?')
+      if (confirmDelete) {
+        await supabase.from('peminjaman').delete().eq('id', id)
+        alert('Data peminjaman dihapus.')
+        loadPeminjaman()
+      }
+    }
+
+    async function loadPeminjaman() {
+      const { data } = await supabase.from('peminjaman').select('*').order('tanggal', { ascending: false })
+      pinjamList.innerHTML = data.map(r => `
+        <div class="card">
+          <h4>${r.nama_alat}</h4>
+          <p><strong>Nama:</strong> ${r.nama_siswa || '-'}</p>
+          <p><strong>NIM:</strong> ${r.nim || '-'}</p>
+          <p><strong>Email:</strong> ${r.user_email}</p>
+          <p><strong>Jumlah:</strong> ${r.jumlah}</p>
+          <p><strong>Status:</strong> ${r.status}</p>
+          <p><strong>Tanggal:</strong> ${new Date(r.tanggal).toLocaleString()}</p>
+          <div>
+            ${r.status === 'menunggu' ? `
+            <button class="approve" onclick="approve(${r.id}, ${r.alat_id}, ${r.jumlah})">Setujui</button>
+            <button class="reject" onclick="reject(${r.id})">Tolak</button>` : ''}
+            <button class="delete" onclick="hapusPeminjaman(${r.id})">Hapus</button>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    window.approve = async (id, alat_id, jumlah) => {
+      const { data: alat } = await supabase.from('inventaris').select('stok').eq('id', alat_id).single()
+      if (alat && alat.stok >= jumlah) {
+        await supabase.from('inventaris').update({ stok: alat.stok - jumlah }).eq('id', alat_id)
+        await supabase.from('peminjaman').update({ status: 'disetujui' }).eq('id', id)
+        alert('Peminjaman disetujui.')
+      } else {
+        alert('Stok tidak cukup.')
+      }
+      loadPeminjaman()
+      loadInventaris()
+    }
+
+    window.reject = async (id) => {
+      await supabase.from('peminjaman').update({ status: 'ditolak' }).eq('id', id)
+      alert('Peminjaman ditolak.')
+      loadPeminjaman()
+    }
+
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut()
+      location.href = 'index.html'
+    }
+
+    loadInventaris()
+    loadPeminjaman()
+  </script>
+</body>
+</html>
